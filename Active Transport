@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Active Transport · S2 Revision</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F6EE; --paper-line:#DDE7D3; --ink:#22301F;
+    --amber:#C97F1E; --teal:#2F6E64; --rose:#AE4267;
+    --card:#FDFEFA; --ok:#3C7A4F; --bad:#B24444;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 32px,
+      var(--paper);
+    color:var(--ink);
+    padding:28px 20px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:1000px;margin:0 auto;}
+  a{color:inherit;}
+
+  .s2-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:22px; flex-wrap:wrap; }
+  .s2-eyebrow{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rose); margin:0 0 6px; }
+  .s2-title{ font-family:'Zilla Slab',serif; font-weight:700; font-size:clamp(24px,4vw,34px); margin:0; line-height:1.15; }
+  .s2-sub{ font-size:14px; color:#556352; margin-top:8px; max-width:520px;}
+  .back-link{ display:inline-block; margin-bottom:18px; font-family:'Space Mono',monospace; font-size:12px; color:var(--teal); text-decoration:none; border:1px solid #c7d6bc; padding:7px 12px; border-radius:20px; background:var(--card);}
+  .back-link:hover{ background:var(--teal); color:#fff; }
+
+  .cell-wrap{ width:110px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; }
+  .cell-label{ font-family:'Space Mono',monospace; font-size:10px; color:#556352; margin-bottom:6px; text-align:center;}
+  .cell-svg{ width:100px; height:100px; }
+  .cell-wall{ fill:#fdfef9; stroke:#a9c19c; stroke-width:2; transition:stroke-dasharray .6s ease, stroke .6s ease; }
+  .cell-vacuole{ fill:var(--teal); opacity:.55; transition:r .8s cubic-bezier(.34,1.4,.64,1), fill .6s ease; }
+  .cell-status{ font-family:'Space Mono',monospace; font-size:11px; margin-top:6px; color:var(--teal); font-weight:700; text-align:center;}
+
+  .s2-tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .s2-tab{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.03em; padding:9px 14px; border-radius:20px; border:1px solid #c7d6bc; background:var(--card); cursor:pointer; color:var(--ink); transition:all .2s ease; }
+  .s2-tab.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .s2-tab .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; background:#c7d6bc;}
+  .s2-tab.done .dot{ background:var(--ok); }
+
+  .panel{ display:none; animation:fade .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .section-card{ background:var(--card); border:1px solid #dbe7d1; border-radius:12px; padding:20px; margin-bottom:16px; }
+  .section-title{ font-family:'Zilla Slab',serif; font-weight:700; font-size:19px; margin:0 0 12px; color:var(--teal);}
+
+  .cards-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; }
+  /* --- FLIP CARD FIX: taller cards + scrollable back so text never gets cut --- */
+  .flip{ perspective:1000px; height:170px; cursor:pointer; }
+  .flip-inner{ position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; }
+  .flip.flipped .flip-inner{ transform:rotateY(180deg); }
+  .flip-face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:10px; display:flex; padding:12px; }
+  .flip-front{ align-items:center; justify-content:center; text-align:center; background:#fbf6e8; border:1px dashed var(--amber); font-family:'Zilla Slab',serif; font-weight:700; font-size:15px; color:var(--amber);}
+  .flip-back{ transform:rotateY(180deg); background:var(--teal); color:#fff; font-weight:500; font-size:12.5px; line-height:1.4; align-items:flex-start; justify-content:flex-start; text-align:left; overflow-y:auto; }
+  .flip-back::-webkit-scrollbar{ width:6px; } .flip-back::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.4); border-radius:3px; }
+
+  .factor-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .factor-card{ background:#fbf6e8; border:1px solid #e6d9b0; border-radius:10px; padding:14px; }
+  .factor-name{ font-weight:700; margin-bottom:8px; font-size:14px; }
+  .factor-btns{ display:flex; gap:8px; }
+  .factor-btn{ flex:1; padding:8px 6px; border-radius:8px; border:1px solid #d8cfb8; background:#fffef9; cursor:pointer; font-size:12px; font-family:'Space Mono',monospace; }
+  .factor-btn.correct{ background:#e5f2e8; border-color:var(--ok); color:var(--ok); font-weight:700;}
+  .factor-btn.wrong{ background:#f6e5e5; border-color:var(--bad); color:var(--bad);}
+
+  .quiz-q{ font-weight:600; margin-bottom:10px; }
+  .quiz-opts{ display:flex; flex-direction:column; gap:8px; }
+  .quiz-opt{ text-align:left; padding:10px 14px; border-radius:8px; border:1px solid #c7d6bc; background:#fffef9; cursor:pointer; font-size:14px; }
+  .quiz-opt.correct{ background:#e5f2e8; border-color:var(--ok); color:var(--ok); font-weight:600;}
+  .quiz-opt.wrong{ background:#f6e5e5; border-color:var(--bad); color:var(--bad);}
+  .quiz-fb{ margin-top:10px; font-size:13px; color:#556352; min-height:18px;}
+
+  .mark-btn{ margin-top:12px; font-family:'Space Mono',monospace; font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--teal); background:#fff; color:var(--teal); cursor:pointer; }
+  .mark-btn.done{ background:var(--teal); color:#fff; }
+  .scenario{ background:#fbf6e8; border-left:3px solid var(--amber); padding:10px 12px; border-radius:6px; font-size:14px; margin-bottom:10px;}
+
+  .acc{ border:1px solid #dbe7d1; border-radius:10px; overflow:hidden; margin-bottom:10px; }
+  .acc-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 16px; background:#fbf6e8; cursor:pointer; font-weight:700; font-size:14px; }
+  .acc-head .arrow{ transition:transform .3s ease; font-family:'Space Mono',monospace; color:var(--teal); }
+  .acc.open .acc-head .arrow{ transform:rotate(180deg); }
+  .acc-body{ max-height:0; overflow:hidden; transition:max-height .4s ease; background:#fffef9; }
+  .acc.open .acc-body{ max-height:1400px; }
+  .acc-body-inner{ padding:4px 16px 16px; font-size:14px; line-height:1.55; }
+  .acc-body-inner .ex{ background:#f2f6ee; border-left:3px solid var(--teal); padding:9px 12px; border-radius:6px; margin-top:8px; font-size:13.5px;}
+  .acc-body-inner table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px;}
+  .acc-body-inner td, .acc-body-inner th{ border:1px solid #dbe7d1; padding:6px 8px; text-align:left; }
+  .acc-body-inner th{ background:#eef4e7; }
+
+  .exam-q{ border:1px solid #e6d9b0; background:#fdfaf1; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+  .exam-tag{ font-family:'Space Mono',monospace; font-size:10px; color:var(--amber); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; }
+  .exam-body{ font-size:14px; line-height:1.5; margin-bottom:10px; }
+  .exam-reveal{ font-family:'Space Mono',monospace; font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--amber); background:#fff; color:var(--amber); cursor:pointer; }
+  .exam-answer{ display:none; margin-top:10px; background:#fff; border-left:3px solid var(--ok); padding:10px 12px; border-radius:6px; font-size:13.5px; }
+  .exam-answer.shown{ display:block; }
+
+  /* ---- index page ---- */
+  .idx-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .idx-card{ display:block; text-decoration:none; background:var(--card); border:1px solid #dbe7d1; border-radius:14px; padding:20px; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+  .idx-card:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(47,110,100,.14); border-color:var(--teal); }
+  .idx-code{ font-family:'Space Mono',monospace; font-size:11px; color:var(--rose); letter-spacing:.08em; }
+  .idx-name{ font-family:'Zilla Slab',serif; font-weight:700; font-size:20px; margin:6px 0 8px; color:var(--ink); }
+  .idx-desc{ font-size:13px; color:#556352; line-height:1.5; }
+  .idx-tag{ display:inline-block; margin-top:12px; font-family:'Space Mono',monospace; font-size:10px; color:var(--teal); border:1px solid #c7d6bc; padding:4px 9px; border-radius:20px;}
+  .idx-badge{ display:inline-block; font-family:'Space Mono',monospace; font-size:10px; padding:2px 8px; border-radius:10px; background:#eef4e7; color:var(--teal); margin-left:6px;}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app">
+  <a class="back-link" href="index.html">← All topics</a>
+  <div class="s2-header">
+    <div>
+      <p class="s2-eyebrow">Test 3 · B3.3</p>
+      <h1 class="s2-title">Active Transport</h1>
+      <p class="s2-sub">The 'uphill' transport that costs energy. Flip the terms, compare it with the passive processes, then apply it to root hairs, digestion and salt glands with exam-style questions.</p>
+    </div>
+    <div class="cell-wrap">
+      <div class="cell-label">progress</div>
+      <svg class="cell-svg" viewBox="0 0 100 100">
+        <circle class="cell-wall" id="cellWall" cx="50" cy="50" r="42" stroke-dasharray="6 4"/>
+        <circle class="cell-vacuole" id="cellVacuole" cx="50" cy="50" r="14"/>
+      </svg>
+      <div class="cell-status" id="cellStatus">just starting · 0%</div>
+    </div>
+  </div>
+  <div class="s2-tabs" id="tabs"></div>
+  <div id="panels"></div>
+</div>
+
+<script>
+const DATA = {"eyebrow": "Test 3 \u00b7 B3.3", "title": "Active Transport", "subtitle": "The 'uphill' transport that costs energy. Flip the terms, compare it with the passive processes, then apply it to root hairs, digestion and salt glands with exam-style questions.", "panels": [{"id": "basics", "label": "The basics", "sections": [{"type": "vocab", "mark": true, "cards": [["Active transport", "The movement of particles through a cell membrane from a region of lower concentration to a region of higher concentration (against the concentration gradient), using energy from respiration"], ["Against the gradient", "Moving particles the 'wrong' way \u2014 from low to high concentration \u2014 which is why energy is needed"], ["Energy from respiration", "The energy for active transport comes from respiration (as ATP), released in the mitochondria"], ["Carrier (transport) proteins", "Proteins in the membrane that use energy to pick up particles on one side and pump them to the other"]]}, {"type": "accordion", "items": [{"q": "Why does moving against a gradient need energy?", "body": "Diffusion and osmosis are <strong>passive</strong> \u2014 particles naturally spread from high to low concentration, so no energy is needed. Active transport does the opposite: it pushes particles from low to high concentration.<div class='ex'>Think of a ball rolling downhill on its own (passive) versus pushing it back <em>up</em> the hill (active) \u2014 going uphill takes effort/energy every time.</div>"}, {"q": "Where does the energy actually come from?", "body": "From <strong>respiration</strong> inside the cell, which happens in the <strong>mitochondria</strong> and releases energy as ATP.<div class='ex'>Cells that do lots of active transport (like root hair cells and gut lining cells) have <strong>many mitochondria</strong> to supply that energy. That's a favourite exam detail.</div>"}, {"q": "What do the carrier proteins do?", "body": "Carrier proteins sit in the cell membrane. Using energy (ATP), a specific particle binds to the protein, the protein changes shape, and it releases the particle on the other side \u2014 even against the concentration gradient.<div class='ex'>The ATP \u2192 ADP + P step (energy released) is what powers the protein to change shape and pump the particle across.</div>"}]}, {"type": "quiz", "question": "Where does the energy for active transport come from?", "opts": ["Respiration in the cell (released in the mitochondria)", "Sunlight absorbed by the membrane", "The concentration gradient itself", "Osmosis of water into the cell"], "correct": 0, "fb": "Active transport uses energy from respiration (ATP), released in the mitochondria \u2014 which is why very active cells have many mitochondria."}, {"type": "quiz", "question": "How is active transport different from diffusion?", "opts": ["Active transport moves particles against the gradient using energy; diffusion moves them down the gradient with no energy", "Active transport only moves water; diffusion only moves solutes", "Diffusion needs a membrane; active transport never does", "They are the same process with different names"], "correct": 0, "fb": "Key difference: direction (against vs down the gradient) and energy (required vs not)."}, {"type": "exam", "items": [{"tag": "3 marks", "q": "Define active transport using the words energy, concentration gradient and proteins.", "a": "Movement of particles across a membrane from low to high concentration / against the concentration gradient (1), using energy from respiration (1), by carrier/transport proteins (1)."}]}]}, {"id": "compare", "label": "3 types compared", "sections": [{"type": "accordion", "title": "Comparing the 3 modes of transport", "items": [{"q": "Full comparison table \u2014 tap to reveal", "body": "<table><tr><th></th><th>Active transport</th><th>Osmosis</th><th>Diffusion</th></tr><tr><th>Needs energy?</th><td>Yes \u2014 from respiration (mitochondria)</td><td>No</td><td>No</td></tr><tr><th>Needs a membrane?</th><td>Yes \u2014 with carrier proteins</td><td>Yes \u2014 partially permeable</td><td>No</td></tr><tr><th>Gradient</th><td>Against the gradient</td><td>Water moves down its gradient</td><td>Substances move down the gradient</td></tr><tr><th>Example</th><td>Glucose/ions into gut & root hair cells</td><td>Water uptake by roots; water reabsorbed in kidneys</td><td>O\u2082 into blood at alveoli; CO\u2082 into a leaf</td></tr></table>"}, {"q": "How do I remember which is which?", "body": "<div class='ex'><strong>Active</strong> = <strong>A</strong>gainst the gradient + needs <strong>A</strong>TP.<br><strong>Osmosis</strong> = only water, needs a membrane.<br><strong>Diffusion</strong> = any particle, down the gradient, no membrane needed.</div>"}]}, {"type": "factors", "mark": true, "title": "Does this process need energy from respiration?", "note": "Decide for each process.", "items": [{"name": "Diffusion", "correct": "no", "labels": ["Needs energy", "No energy"], "values": ["yes", "no"]}, {"name": "Osmosis", "correct": "no", "labels": ["Needs energy", "No energy"], "values": ["yes", "no"]}, {"name": "Active transport", "correct": "yes", "labels": ["Needs energy", "No energy"], "values": ["yes", "no"]}]}, {"type": "quiz", "question": "Which process can move a substance from a region of LOW concentration to a region of HIGH concentration?", "opts": ["Active transport", "Diffusion", "Osmosis", "None of them can"], "correct": 0, "fb": "Only active transport moves particles against the gradient (low \u2192 high), and it needs energy to do so."}, {"type": "exam", "items": [{"tag": "3 marks", "q": "State whether each process requires energy from respiration and whether it requires a membrane: diffusion, osmosis, active transport.", "a": "Diffusion: no energy, no membrane needed (1). Osmosis: no energy, needs a partially permeable membrane (1). Active transport: needs energy from respiration, needs a membrane with carrier proteins (1)."}]}]}, {"id": "examples", "label": "Real examples", "sections": [{"type": "accordion", "items": [{"q": "Ion uptake by root hair cells (the key example)", "body": "Soil usually has a <strong>lower</strong> concentration of mineral ions (e.g. nitrate, magnesium) than the inside of the root hair cell.<div class='ex'>Diffusion would move ions <em>out</em> of the cell (down the gradient) \u2014 no good for the plant. Instead, root hair cells use <strong>active transport</strong> to pull ions <em>in</em>, from low (soil) to high (cell) concentration, using energy from respiration. That's why root hair cells have many mitochondria.</div>"}, {"q": "Absorption in the small intestine", "body": "When food is digested, glucose diffuses from the gut into the blood while its concentration is high.<div class='ex'>To absorb the <em>last</em> of the glucose \u2014 once the gut concentration drops below the blood \u2014 the cells switch to <strong>active transport</strong> to keep pulling glucose in against the gradient, so none is wasted.</div>"}, {"q": "Salt glands in marine animals", "body": "<div class='ex'>Sea water is very salty. Marine animals use active transport in <strong>salt glands</strong> to pump excess salt <em>out</em> against the gradient. Otherwise salt would build up inside and draw water out of their cells by osmosis, dehydrating them.</div>"}]}, {"type": "quiz", "scenario": "The table shows sulfate ion concentration: barley roots 1.4, soil 0.15 (mmol per dm\u00b3).", "question": "Is it possible for the plant to take up sulfate ions by diffusion?", "opts": ["No \u2014 there are more ions in the root than the soil, so active transport is needed to move them against the gradient", "Yes \u2014 diffusion moves them from soil into the root", "Yes \u2014 because water carries them in by osmosis", "No \u2014 the soil has too much sulfate"], "correct": 0, "fb": "Ions are more concentrated in the root than the soil, so diffusion would move them out. Uptake must be by active transport (low \u2192 high, using energy)."}, {"type": "quiz", "scenario": "A piece of intestine is poisoned with cyanide, which stops respiration.", "question": "Why does this stop active transport?", "opts": ["Active transport needs energy from respiration; no respiration means no energy to move particles against the gradient", "Cyanide blocks the partially permeable membrane", "Cyanide makes the particles too heavy to move", "It doesn't \u2014 active transport continues normally"], "correct": 0, "fb": "Active transport relies on energy from respiration. Cyanide stops respiration, so there's no energy for the carrier proteins to pump particles against the gradient."}, {"type": "exam", "items": [{"tag": "2 marks", "q": "Look at the table (root sulfate 1.4, soil 0.15). Is it possible for the plant to take up sulfate ions by diffusion? Explain.", "a": "No (1). There are more ions in the root than the soil, so active transport is needed to move them from low to high concentration / against the gradient (1)."}, {"tag": "2 marks", "q": "Describe two examples where osmosis is used in living things.", "a": "Any two: water uptake by root hair cells (1); reabsorption of water in the kidneys (1); water moving into/out of cells generally (1)."}, {"tag": "3 marks", "q": "Cyanide prevents respiration. Explain why cyanide would prevent active transport occurring.", "a": "Active transport requires energy produced in respiration (1), to move particles against the concentration gradient (1), by carrier proteins (1)."}]}]}]};
+const root = document.getElementById('app');
+
+// ---- header + tabs ----
+let tabsHtml = '';
+let panelsHtml = '';
+DATA.panels.forEach((p,i)=>{
+  tabsHtml += `<div class="s2-tab ${i===0?'active':''}" data-panel="${p.id}"><span class="dot"></span>${p.label}</div>`;
+  let sec = '';
+  p.sections.forEach((s,si)=>{
+    const uid = p.id+'_'+si;
+    if(s.type==='vocab'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Key terms — flip the card'}</p><div class="cards-grid" data-vocab="${uid}"></div>${s.mark?`<button class="mark-btn" data-mark="${uid}">Mark as reviewed ✓</button>`:''}</div>`;
+    } else if(s.type==='accordion'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Understand it deeply'}</p><div data-acc="${uid}"></div></div>`;
+    } else if(s.type==='factors'){
+      sec += `<div class="section-card"><p class="section-title">${s.title}</p>${s.note?`<p style="font-size:13px;color:#556352;margin-top:-6px;margin-bottom:14px;">${s.note}</p>`:''}<div class="factor-grid" data-factors="${uid}"></div>${s.mark?`<button class="mark-btn" data-mark="${uid}" style="margin-top:14px;">Mark as reviewed ✓</button>`:''}</div>`;
+    } else if(s.type==='quiz'){
+      sec += `<div class="section-card">${s.scenario?`<div class="scenario">${s.scenario}</div>`:''}<p class="quiz-q">${s.question}</p><div class="quiz-opts" data-quiz="${uid}"></div><div class="quiz-fb" data-fb="${uid}"></div></div>`;
+    } else if(s.type==='exam'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Exam-style practice'}</p><div data-exam="${uid}"></div></div>`;
+    }
+  });
+  panelsHtml += `<div class="panel ${i===0?'active':''}" id="panel-${p.id}">${sec}</div>`;
+});
+
+root.querySelector('#tabs').innerHTML = tabsHtml;
+root.querySelector('#panels').innerHTML = panelsHtml;
+
+// ---- tab switching ----
+const tabs = root.querySelectorAll('.s2-tab');
+const panels = root.querySelectorAll('.panel');
+tabs.forEach(tab=>tab.addEventListener('click',()=>{
+  tabs.forEach(t=>t.classList.remove('active'));
+  panels.forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');
+  root.querySelector('#panel-'+tab.dataset.panel).classList.add('active');
+}));
+
+// ---- progress meter ----
+const markBtns = root.querySelectorAll('.mark-btn');
+const total = markBtns.length || 1;
+const progress = {};
+const vacuole = root.querySelector('#cellVacuole');
+const wall = root.querySelector('#cellWall');
+const status = root.querySelector('#cellStatus');
+const words = ['just starting','warming up','filling up','almost there','fully reviewed'];
+function updateCell(){
+  const done = Object.values(progress).filter(Boolean).length;
+  const frac = done/total;
+  const pct = Math.round(frac*100);
+  vacuole.setAttribute('r', 14 + frac*28);
+  wall.setAttribute('stroke-dasharray', pct===100 ? '0' : '6 4');
+  wall.style.stroke = pct===100 ? 'var(--teal)' : '#a9c19c';
+  const wi = Math.min(words.length-1, Math.round(frac*(words.length-1)));
+  status.textContent = words[wi] + ' · ' + pct + '%';
+  // mark tabs whose every mark-btn is done
+  tabs.forEach(t=>{
+    const btns = root.querySelectorAll('#panel-'+t.dataset.panel+' .mark-btn');
+    if(btns.length && [...btns].every(b=>progress[b.dataset.mark])) t.classList.add('done');
+  });
+}
+markBtns.forEach(b=>b.addEventListener('click',()=>{
+  progress[b.dataset.mark]=true; b.classList.add('done'); b.textContent='Reviewed ✓'; updateCell();
+}));
+
+// ---- render each section's contents ----
+DATA.panels.forEach(p=>p.sections.forEach((s,si)=>{
+  const uid = p.id+'_'+si;
+  if(s.type==='vocab'){
+    const grid = root.querySelector(`[data-vocab="${uid}"]`);
+    s.cards.forEach(([term,def])=>{
+      const c=document.createElement('div'); c.className='flip';
+      c.innerHTML=`<div class="flip-inner"><div class="flip-face flip-front">${term}</div><div class="flip-face flip-back">${def}</div></div>`;
+      c.addEventListener('click',()=>c.classList.toggle('flipped')); grid.appendChild(c);
+    });
+  } else if(s.type==='accordion'){
+    const cont = root.querySelector(`[data-acc="${uid}"]`);
+    s.items.forEach(it=>{
+      const a=document.createElement('div'); a.className='acc';
+      a.innerHTML=`<div class="acc-head"><span>${it.q}</span><span class="arrow">▾</span></div><div class="acc-body"><div class="acc-body-inner">${it.body}</div></div>`;
+      a.querySelector('.acc-head').addEventListener('click',()=>a.classList.toggle('open')); cont.appendChild(a);
+    });
+  } else if(s.type==='factors'){
+    const grid = root.querySelector(`[data-factors="${uid}"]`);
+    s.items.forEach(f=>{
+      const la=f.labels?f.labels[0]:'Rate increases', lb=f.labels?f.labels[1]:'Rate decreases';
+      const va=f.values?f.values[0]:'increase', vb=f.values?f.values[1]:'decrease';
+      const c=document.createElement('div'); c.className='factor-card';
+      c.innerHTML=`<div class="factor-name">${f.name}</div><div class="factor-btns"><button class="factor-btn" data-v="${va}">${la}</button><button class="factor-btn" data-v="${vb}">${lb}</button></div>`;
+      c.querySelectorAll('.factor-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        c.querySelectorAll('.factor-btn').forEach(b=>b.classList.remove('correct','wrong'));
+        if(btn.dataset.v===f.correct){btn.classList.add('correct');}
+        else{btn.classList.add('wrong');[...c.querySelectorAll('.factor-btn')].find(b=>b.dataset.v===f.correct).classList.add('correct');}
+      }));
+      grid.appendChild(c);
+    });
+  } else if(s.type==='quiz'){
+    const cont = root.querySelector(`[data-quiz="${uid}"]`);
+    const fb = root.querySelector(`[data-fb="${uid}"]`);
+    s.opts.forEach((opt,i)=>{
+      const b=document.createElement('div'); b.className='quiz-opt'; b.textContent=opt;
+      b.addEventListener('click',()=>{
+        [...cont.children].forEach(c=>c.classList.remove('correct','wrong'));
+        if(i===s.correct){b.classList.add('correct'); fb.style.color='var(--ok)';}
+        else{b.classList.add('wrong'); cont.children[s.correct].classList.add('correct'); fb.style.color='var(--bad)';}
+        fb.innerHTML=s.fb;
+      });
+      cont.appendChild(b);
+    });
+  } else if(s.type==='exam'){
+    const cont = root.querySelector(`[data-exam="${uid}"]`);
+    s.items.forEach(it=>{
+      const box=document.createElement('div'); box.className='exam-q';
+      box.innerHTML=`<div class="exam-tag">${it.tag}</div><div class="exam-body">${it.q}</div><button class="exam-reveal">Show mark scheme</button><div class="exam-answer">${it.a}</div>`;
+      const btn=box.querySelector('.exam-reveal'), ans=box.querySelector('.exam-answer');
+      btn.addEventListener('click',()=>{ans.classList.toggle('shown'); btn.textContent=ans.classList.contains('shown')?'Hide mark scheme':'Show mark scheme';});
+      cont.appendChild(box);
+    });
+  }
+}));
+
+updateCell();
+</script>
+
+</body>
+</html>
