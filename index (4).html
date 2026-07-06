@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S2 Science · Test 3 revision hub</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="s2-root">
+  <div class="s2-header">
+    <div>
+      <p class="s2-eyebrow">S2 · IGCSE Coordinated Science · Test 3 (Bimester 2, Week 9)</p>
+      <h1 class="s2-title">Test 3 revision hub</h1>
+      <p class="s2-sub">Pick a topic to revise. Each page has key-term flip cards, deeper "why does this happen" explanations, quick self-check quizzes and exam-style questions with mark schemes. Work through the tabs and watch the mastery meter fill up.</p>
+    </div>
+  </div>
+
+  <div class="hub-grid" id="hubGrid"></div>
+
+  <div class="hub-note">
+    <strong>Tip para el examen:</strong> empieza por los temas que menos dominas. En cada página, no te saltes las tarjetas de <em>"Understand it deeply"</em>: ahí está el porqué de cada proceso, que es justo lo que piden los "explain" de más puntos. Termina cada tema con los <em>Exam-style practice</em> tapando el mark scheme primero.
+  </div>
+</div>
+
+<script>
+const TOPICS = [
+  { file:"diffusion-osmosis.html", code:"C1.2 · B3.1 · B3.2", subj:"bio",
+    title:"Diffusion & Osmosis",
+    desc:"Diffusion by kinetic theory, molecular mass, factors affecting rate, osmosis and water potential, and the effect on plant cells (turgid, flaccid, plasmolysis)." },
+  { file:"active-transport.html", code:"B3.3", subj:"bio",
+    title:"Active Transport",
+    desc:"Moving particles against a concentration gradient using energy from respiration. Carrier proteins, ATP, and examples like root hairs and the small intestine." },
+  { file:"ionic-bonding.html", code:"C2.4", subj:"chem",
+    title:"Ionic Bonding, Formulae & Names",
+    desc:"How cations and anions form, dot-and-cross diagrams, writing ionic formulae and names, the giant lattice, and the properties of ionic compounds." },
+  { file:"acids-bases-salts.html", code:"C7.1", subj:"chem",
+    title:"Acids, Bases & Salts",
+    desc:"Reactions of acids with metals, bases and carbonates; indicators (litmus, methyl orange, universal); the pH scale; and neutralisation." },
+  { file:"exo-endo.html", code:"C5.1", subj:"chem",
+    title:"Exothermic & Endothermic Reactions",
+    desc:"Energy transfer to/from the surroundings, temperature changes, reaction pathway diagrams, enthalpy change (ΔH), activation energy and bond energetics." }
+];
+
+const grid = document.getElementById('hubGrid');
+TOPICS.forEach(t=>{
+  const a = document.createElement('a');
+  a.className = 'hub-card';
+  a.href = t.file;
+  a.innerHTML = `
+    <span class="stripe ${t.subj}"></span>
+    <span class="code">${t.code}</span><span class="subj ${t.subj}">${t.subj==='bio'?'Biology':'Chemistry'}</span>
+    <h2>${t.title}</h2>
+    <p>${t.desc}</p>
+    <span class="go">Open topic →</span>`;
+  grid.appendChild(a);
+});
+</script>
+</body>
+</html>
