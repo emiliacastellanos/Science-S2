@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diffusion &amp; Osmosis · S2 Revision</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F6EE; --paper-line:#DDE7D3; --ink:#22301F;
+    --amber:#C97F1E; --teal:#2F6E64; --rose:#AE4267;
+    --card:#FDFEFA; --ok:#3C7A4F; --bad:#B24444;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0/100% 32px,
+      var(--paper);
+    color:var(--ink);
+    padding:28px 20px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:1000px;margin:0 auto;}
+  a{color:inherit;}
+
+  .s2-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:24px; margin-bottom:22px; flex-wrap:wrap; }
+  .s2-eyebrow{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--rose); margin:0 0 6px; }
+  .s2-title{ font-family:'Zilla Slab',serif; font-weight:700; font-size:clamp(24px,4vw,34px); margin:0; line-height:1.15; }
+  .s2-sub{ font-size:14px; color:#556352; margin-top:8px; max-width:520px;}
+  .back-link{ display:inline-block; margin-bottom:18px; font-family:'Space Mono',monospace; font-size:12px; color:var(--teal); text-decoration:none; border:1px solid #c7d6bc; padding:7px 12px; border-radius:20px; background:var(--card);}
+  .back-link:hover{ background:var(--teal); color:#fff; }
+
+  .cell-wrap{ width:110px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; }
+  .cell-label{ font-family:'Space Mono',monospace; font-size:10px; color:#556352; margin-bottom:6px; text-align:center;}
+  .cell-svg{ width:100px; height:100px; }
+  .cell-wall{ fill:#fdfef9; stroke:#a9c19c; stroke-width:2; transition:stroke-dasharray .6s ease, stroke .6s ease; }
+  .cell-vacuole{ fill:var(--teal); opacity:.55; transition:r .8s cubic-bezier(.34,1.4,.64,1), fill .6s ease; }
+  .cell-status{ font-family:'Space Mono',monospace; font-size:11px; margin-top:6px; color:var(--teal); font-weight:700; text-align:center;}
+
+  .s2-tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+  .s2-tab{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.03em; padding:9px 14px; border-radius:20px; border:1px solid #c7d6bc; background:var(--card); cursor:pointer; color:var(--ink); transition:all .2s ease; }
+  .s2-tab.active{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .s2-tab .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; background:#c7d6bc;}
+  .s2-tab.done .dot{ background:var(--ok); }
+
+  .panel{ display:none; animation:fade .35s ease; }
+  .panel.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .section-card{ background:var(--card); border:1px solid #dbe7d1; border-radius:12px; padding:20px; margin-bottom:16px; }
+  .section-title{ font-family:'Zilla Slab',serif; font-weight:700; font-size:19px; margin:0 0 12px; color:var(--teal);}
+
+  .cards-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:12px; }
+  /* --- FLIP CARD FIX: taller cards + scrollable back so text never gets cut --- */
+  .flip{ perspective:1000px; height:170px; cursor:pointer; }
+  .flip-inner{ position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; }
+  .flip.flipped .flip-inner{ transform:rotateY(180deg); }
+  .flip-face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:10px; display:flex; padding:12px; }
+  .flip-front{ align-items:center; justify-content:center; text-align:center; background:#fbf6e8; border:1px dashed var(--amber); font-family:'Zilla Slab',serif; font-weight:700; font-size:15px; color:var(--amber);}
+  .flip-back{ transform:rotateY(180deg); background:var(--teal); color:#fff; font-weight:500; font-size:12.5px; line-height:1.4; align-items:flex-start; justify-content:flex-start; text-align:left; overflow-y:auto; }
+  .flip-back::-webkit-scrollbar{ width:6px; } .flip-back::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.4); border-radius:3px; }
+
+  .factor-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .factor-card{ background:#fbf6e8; border:1px solid #e6d9b0; border-radius:10px; padding:14px; }
+  .factor-name{ font-weight:700; margin-bottom:8px; font-size:14px; }
+  .factor-btns{ display:flex; gap:8px; }
+  .factor-btn{ flex:1; padding:8px 6px; border-radius:8px; border:1px solid #d8cfb8; background:#fffef9; cursor:pointer; font-size:12px; font-family:'Space Mono',monospace; }
+  .factor-btn.correct{ background:#e5f2e8; border-color:var(--ok); color:var(--ok); font-weight:700;}
+  .factor-btn.wrong{ background:#f6e5e5; border-color:var(--bad); color:var(--bad);}
+
+  .quiz-q{ font-weight:600; margin-bottom:10px; }
+  .quiz-opts{ display:flex; flex-direction:column; gap:8px; }
+  .quiz-opt{ text-align:left; padding:10px 14px; border-radius:8px; border:1px solid #c7d6bc; background:#fffef9; cursor:pointer; font-size:14px; }
+  .quiz-opt.correct{ background:#e5f2e8; border-color:var(--ok); color:var(--ok); font-weight:600;}
+  .quiz-opt.wrong{ background:#f6e5e5; border-color:var(--bad); color:var(--bad);}
+  .quiz-fb{ margin-top:10px; font-size:13px; color:#556352; min-height:18px;}
+
+  .mark-btn{ margin-top:12px; font-family:'Space Mono',monospace; font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--teal); background:#fff; color:var(--teal); cursor:pointer; }
+  .mark-btn.done{ background:var(--teal); color:#fff; }
+  .scenario{ background:#fbf6e8; border-left:3px solid var(--amber); padding:10px 12px; border-radius:6px; font-size:14px; margin-bottom:10px;}
+
+  .acc{ border:1px solid #dbe7d1; border-radius:10px; overflow:hidden; margin-bottom:10px; }
+  .acc-head{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 16px; background:#fbf6e8; cursor:pointer; font-weight:700; font-size:14px; }
+  .acc-head .arrow{ transition:transform .3s ease; font-family:'Space Mono',monospace; color:var(--teal); }
+  .acc.open .acc-head .arrow{ transform:rotate(180deg); }
+  .acc-body{ max-height:0; overflow:hidden; transition:max-height .4s ease; background:#fffef9; }
+  .acc.open .acc-body{ max-height:1400px; }
+  .acc-body-inner{ padding:4px 16px 16px; font-size:14px; line-height:1.55; }
+  .acc-body-inner .ex{ background:#f2f6ee; border-left:3px solid var(--teal); padding:9px 12px; border-radius:6px; margin-top:8px; font-size:13.5px;}
+  .acc-body-inner table{ width:100%; border-collapse:collapse; margin-top:8px; font-size:13px;}
+  .acc-body-inner td, .acc-body-inner th{ border:1px solid #dbe7d1; padding:6px 8px; text-align:left; }
+  .acc-body-inner th{ background:#eef4e7; }
+
+  .exam-q{ border:1px solid #e6d9b0; background:#fdfaf1; border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+  .exam-tag{ font-family:'Space Mono',monospace; font-size:10px; color:var(--amber); letter-spacing:.06em; text-transform:uppercase; margin-bottom:6px; }
+  .exam-body{ font-size:14px; line-height:1.5; margin-bottom:10px; }
+  .exam-reveal{ font-family:'Space Mono',monospace; font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--amber); background:#fff; color:var(--amber); cursor:pointer; }
+  .exam-answer{ display:none; margin-top:10px; background:#fff; border-left:3px solid var(--ok); padding:10px 12px; border-radius:6px; font-size:13.5px; }
+  .exam-answer.shown{ display:block; }
+
+  /* ---- index page ---- */
+  .idx-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+  .idx-card{ display:block; text-decoration:none; background:var(--card); border:1px solid #dbe7d1; border-radius:14px; padding:20px; transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+  .idx-card:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(47,110,100,.14); border-color:var(--teal); }
+  .idx-code{ font-family:'Space Mono',monospace; font-size:11px; color:var(--rose); letter-spacing:.08em; }
+  .idx-name{ font-family:'Zilla Slab',serif; font-weight:700; font-size:20px; margin:6px 0 8px; color:var(--ink); }
+  .idx-desc{ font-size:13px; color:#556352; line-height:1.5; }
+  .idx-tag{ display:inline-block; margin-top:12px; font-family:'Space Mono',monospace; font-size:10px; color:var(--teal); border:1px solid #c7d6bc; padding:4px 9px; border-radius:20px;}
+  .idx-badge{ display:inline-block; font-family:'Space Mono',monospace; font-size:10px; padding:2px 8px; border-radius:10px; background:#eef4e7; color:var(--teal); margin-left:6px;}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app">
+  <a class="back-link" href="index.html">← All topics</a>
+  <div class="s2-header">
+    <div>
+      <p class="s2-eyebrow">Test 3 · C1.2 / B3.1 / B3.2</p>
+      <h1 class="s2-title">Diffusion &amp; Osmosis</h1>
+      <p class="s2-sub">Flip the cards, predict how each factor changes the rate of diffusion, and work through real exam-style scenarios. Watch your progress fill up as you review each section.</p>
+    </div>
+    <div class="cell-wrap">
+      <div class="cell-label">progress</div>
+      <svg class="cell-svg" viewBox="0 0 100 100">
+        <circle class="cell-wall" id="cellWall" cx="50" cy="50" r="42" stroke-dasharray="6 4"/>
+        <circle class="cell-vacuole" id="cellVacuole" cx="50" cy="50" r="14"/>
+      </svg>
+      <div class="cell-status" id="cellStatus">just starting · 0%</div>
+    </div>
+  </div>
+  <div class="s2-tabs" id="tabs"></div>
+  <div id="panels"></div>
+</div>
+
+<script>
+const DATA = {"eyebrow": "Test 3 \u00b7 C1.2 / B3.1 / B3.2", "title": "Diffusion & Osmosis", "subtitle": "Flip the cards, predict how each factor changes the rate of diffusion, and work through real exam-style scenarios. Watch your progress fill up as you review each section.", "panels": [{"id": "diff", "label": "Diffusion", "sections": [{"type": "vocab", "mark": true, "cards": [["Diffusion", "The net movement of particles from a region of higher concentration to a region of lower concentration, down a concentration gradient, as a result of their random movement"], ["Concentration gradient", "The difference in concentration of a substance between two regions"], ["Kinetic particle theory", "All particles are constantly moving; the higher the temperature, the faster they move"], ["Net movement", "The overall direction of movement once you account for particles moving both ways"]]}, {"type": "accordion", "items": [{"q": "What exactly is a concentration gradient?", "body": "It's just the <em>difference</em> in how much of a substance is in one place compared to another.<div class='ex'><strong>Example:</strong> open a perfume bottle in one corner of a room. Right next to it there are loads of perfume particles; the other side has none yet. That difference <em>is</em> the concentration gradient. As particles spread and even up, the gradient shrinks until it disappears.</div>"}, {"q": "What does 'net movement' really mean?", "body": "Particles always move randomly in <em>every</em> direction. 'Net movement' is the overall result once you subtract movement one way from movement the other way.<div class='ex'><strong>Worked example:</strong> 100 particles on side A, 20 on side B. By chance ~10 wander A\u2192B and ~2 wander B\u2192A. Net = 10\u22122 = <strong>8 particles A\u2192B</strong>. Once both sides are equal, the same amount crosses each way, so net movement = 0 \u2014 equilibrium (particles still move, just not more one way).</div>"}, {"q": "Why does relative molecular mass affect the rate for gases? (higher tier)", "body": "At the same temperature all particles have roughly the same kinetic energy. Lighter particles (lower relative molecular mass) therefore move <strong>faster</strong> and diffuse more quickly than heavier ones.<div class='ex'><strong>Classic example:</strong> ammonia (NH\u2083, M\u1d63 \u2248 17) and hydrogen chloride (HCl, M\u1d63 \u2248 36.5) released at opposite ends of a tube. The white ring of ammonium chloride forms nearer the HCl end, because the lighter ammonia travelled further, faster.</div>"}]}, {"type": "quiz", "question": "Why do lighter (lower molecular mass) gas molecules diffuse faster than heavier ones at the same temperature?", "opts": ["Lighter molecules move faster on average at the same temperature, so they spread out more quickly", "Lighter molecules are smaller and can only diffuse in gases", "Molecular mass has no real effect on diffusion rate", "Heavier molecules diffuse faster because they push lighter ones aside"], "correct": 0, "fb": "At a given temperature all particles have similar kinetic energy, so lighter particles move faster and diffuse more quickly."}, {"type": "quiz", "question": "Ammonia gas is released from one end of a glass tube and hydrogen chloride gas from the other, at the same time. A white ring forms closer to the hydrogen chloride end. Why?", "opts": ["Ammonia has a lower molecular mass than hydrogen chloride, so it diffuses faster and travels further before they meet", "Hydrogen chloride is a liquid, not a gas, so it can't diffuse as far", "Ammonia is heavier, so it stays closer to its own end", "Both gases diffuse at exactly the same rate, so this couldn't happen"], "correct": 0, "fb": "Ammonia (M\u1d63 \u2248 17) is lighter than HCl (M\u1d63 \u2248 36.5), so ammonia particles move faster and cover more distance before meeting \u2014 the ring forms nearer the HCl end."}, {"type": "exam", "items": [{"tag": "2 marks", "q": "Explain, in terms of kinetic particle theory, why a smell spreads across a room faster on a hot day than on a cold day.", "a": "Particles have more kinetic energy at a higher temperature (1) so they move faster / diffuse more quickly (1)."}, {"tag": "2 marks", "q": "A gas jar of bromine (reddish-brown, dense gas) is connected to a gas jar of air. State and explain what you would observe over time.", "a": "The brown colour spreads until both jars are evenly coloured (1); bromine particles move down their concentration gradient (net movement high\u2192low) until evenly spread (1)."}]}]}, {"id": "factors", "label": "Factors", "sections": [{"type": "factors", "mark": true, "title": "Predict the effect: does the rate of diffusion increase or decrease?", "note": "Click your answer for each factor.", "items": [{"name": "Surface area increases", "correct": "increase"}, {"name": "Temperature increases", "correct": "increase"}, {"name": "Concentration gradient becomes steeper", "correct": "increase"}, {"name": "Distance to travel increases", "correct": "decrease"}]}, {"type": "accordion", "title": "Why each factor works", "items": [{"q": "Why does more surface area increase the rate?", "body": "Think of doors in a wall. A packed stadium with 1 exit empties slowly; with 10 doors, far more people leave at once.<div class='ex'><strong>Biology:</strong> lungs have millions of tiny alveoli (huge surface area) so oxygen diffuses into blood quickly. Root hairs are long and thin for the same reason \u2014 more surface in contact with soil = faster uptake.</div>"}, {"q": "Why does a steeper gradient increase the rate?", "body": "A steeper gradient = a bigger difference in concentration between the two sides.<div class='ex'><strong>Example:</strong> ink dropped into clear water spreads fast; the same ink in already-tinted water spreads slowly, because the difference is smaller. Bigger difference = more net movement per second.</div>"}]}, {"type": "exam", "items": [{"tag": "3 marks", "q": "A student repeats a diffusion experiment but cuts the potato into smaller cubes. Predict and explain the effect on the rate of diffusion of a dye into the potato.", "a": "Smaller cubes have a greater surface area to volume ratio (1). More surface for particles to diffuse across at once (1), so the rate increases and the dye reaches the centre faster (1)."}, {"tag": "2 marks", "q": "Explain why increasing the distance a substance must travel decreases the rate of diffusion.", "a": "Particles take longer to randomly move across a greater distance (1), so net movement across that distance per second is slower / the rate decreases (1)."}]}]}, {"id": "osmo", "label": "Osmosis", "sections": [{"type": "vocab", "mark": true, "cards": [["Osmosis", "The net movement of water molecules from a region of higher water potential (dilute solution) to a region of lower water potential (concentrated solution), through a partially permeable membrane"], ["Water potential", "A measure of the tendency of water to move out of a solution; pure water has the highest water potential"], ["Partially permeable membrane", "A membrane that lets small molecules like water through, but not larger solute molecules"], ["Dilute vs concentrated", "Dilute = high water potential (more free water); concentrated = low water potential (less free water)"]]}, {"type": "accordion", "items": [{"q": "What is water potential, really?", "body": "Think of it as: <strong>how much free, unobstructed water is available?</strong><div class='ex'>Pure water = lots of free water = <strong>high water potential</strong>. Dissolve sugar into it and the sugar gets in the way, so there's less free water = <strong>lower water potential</strong>. More sugar = even lower.</div><table><tr><th>Solution</th><th>Solute</th><th>Water potential</th></tr><tr><td>Pure water</td><td>0</td><td>Highest</td></tr><tr><td>Dilute</td><td>Low</td><td>High</td></tr><tr><td>Concentrated</td><td>High</td><td>Low</td></tr></table><div class='ex'><strong>Golden rule:</strong> more solute = lower water potential.</div>"}, {"q": "What is a partially permeable membrane?", "body": "A membrane with holes sized so small molecules (water) pass through, but larger molecules (sugar/salt) can't.<div class='ex'><strong>Cat-flap example:</strong> the cat (water) slips through; the big dog (sugar molecule) can't fit. So only water shows net movement across the membrane.</div>"}, {"q": "Why does water move from high to low water potential?", "body": "Same logic as net movement: water moves randomly both ways, but the high-water-potential side has more free water molecules available to wander across, so more water ends up moving high\u2192low. Net result: water moves into the concentrated solution until water potential is equal (or a cell wall builds enough pressure to stop it).<div class='ex'><strong>Real world:</strong> salt on a slug or lettuce lowers the outside water potential, so water rushes out of the cells and they shrivel. Same reason salting preserves meat.</div>"}]}, {"type": "quiz", "scenario": "A partially permeable membrane separates a dilute solution (X) from a concentrated solution (Y).", "question": "Which way will water move by osmosis?", "opts": ["From X to Y (dilute to concentrated)", "From Y to X (concentrated to dilute)", "Water won't move because both sides have some water", "Water moves equally both ways, so no net movement"], "correct": 0, "fb": "Water moves from higher water potential (dilute, X) to lower water potential (concentrated, Y)."}, {"type": "quiz", "scenario": "A visking (dialysis) tubing bag full of concentrated sugar solution is tied and placed in a beaker of pure water.", "question": "What happens to the mass of the bag after 30 minutes, and why?", "opts": ["Mass increases \u2014 water moves into the bag by osmosis (higher water potential outside)", "Mass decreases \u2014 sugar leaks out through the membrane", "Mass stays the same \u2014 nothing can move", "Mass increases \u2014 sugar moves into the bag from the water"], "correct": 0, "fb": "Pure water outside has higher water potential than the sugar solution inside, so water moves into the bag by osmosis, increasing its mass."}, {"type": "exam", "items": [{"tag": "1 mark", "q": "State the name of the process that causes water to enter or leave potato cells placed in sugar solution.", "a": "Osmosis (1)."}, {"tag": "3 marks", "q": "A plant cell is placed into a concentrated salt solution. Explain, in terms of water potential, why water leaves the cell.", "a": "The cell has a higher water potential than the salt solution (1). Water moves from higher to lower water potential (1), through the partially permeable cell membrane, by osmosis (1)."}, {"tag": "2 marks", "q": "State two differences between diffusion and osmosis.", "a": "Any two: osmosis moves only water, diffusion any particle (1); osmosis needs a partially permeable membrane, diffusion doesn't (1); osmosis is described by water potential, diffusion by concentration gradient (1)."}, {"tag": "4 marks", "q": "Complete a table stating (tick/cross) for diffusion and osmosis: must involve a partially permeable membrane; involves movement of gases and solutes; results from random movement; requires energy from respiration.", "a": "Partially permeable membrane: diffusion \u2717, osmosis \u2713. Movement of gases and solutes: diffusion \u2713, osmosis \u2717. Random movement: diffusion \u2713, osmosis \u2713. Requires energy from respiration: diffusion \u2717, osmosis \u2717 (1 mark per correct row)."}]}]}, {"id": "cells", "label": "Cell effects", "sections": [{"type": "vocab", "mark": true, "cards": [["Turgid", "A plant cell that has taken in water by osmosis until it is swollen and firm; the cytoplasm presses the membrane firmly against the cell wall"], ["Turgor pressure", "The pressure of the cell contents pushing outwards against the cell wall, caused by water entering by osmosis"], ["Flaccid", "A plant cell with little or no turgor pressure; not firm, but the membrane hasn't pulled away from the wall"], ["Plasmolysis", "When a plant cell loses so much water by osmosis that the cell membrane pulls away from the cell wall"]]}, {"type": "accordion", "items": [{"q": "Why doesn't a plant cell burst when turgid?", "body": "Animal cells have no wall, so too much water makes them swell and burst. Plant cells have a strong, rigid <strong>cellulose cell wall</strong> around the membrane.<div class='ex'>Picture a water balloon (membrane) inside a slightly bigger box (cell wall). Fill it and it presses firmly against the box, which stops it expanding. That firm, pressed state is <strong>turgid</strong>; the pushing force is <strong>turgor pressure</strong>. Turgor keeps leaves and stems upright.</div>"}, {"q": "Flaccid vs plasmolysed \u2014 what's the difference?", "body": "Both involve losing water, but different amounts.<div class='ex'><strong>Flaccid</strong> = lost enough water that there's little turgor pressure, but the membrane still touches the wall.<br><br><strong>Plasmolysed</strong> = lost so much water the membrane peels away from the wall, leaving a visible gap. Happens in very concentrated (low water potential) solutions.<br><br>Sequence: turgid \u2192 (loses water) \u2192 flaccid \u2192 (loses more) \u2192 plasmolysed.</div>"}, {"q": "Why does this matter for a whole plant?", "body": "A whole plant stays upright because <em>most</em> cells are turgid at once \u2014 that combined turgor pressure holds stems and leaves up.<div class='ex'>A plant wilts when unwatered: soil dries out, its water potential drops, cells can't take in water and lose turgor (become flaccid). Rewater it and \u2014 if not too far gone \u2014 cells take in water by osmosis, become turgid, and the plant perks up.</div>"}]}, {"type": "quiz", "scenario": "A plant cell is placed in a concentrated sugar solution. It loses water, the cytoplasm shrinks and the membrane pulls away from the cell wall.", "question": "What term describes this state?", "opts": ["Turgid", "Flaccid", "Plasmolysed", "Saturated"], "correct": 2, "fb": "Plasmolysed: so much water left by osmosis that the membrane pulled away from the cell wall."}, {"type": "quiz", "scenario": "A plant cell was in glucose solution, then moved into distilled water. After 15 minutes it looks swollen, with a large vacuole pressing the cytoplasm firmly against the cell wall.", "question": "What describes its new state, and what caused it?", "opts": ["Turgid \u2014 water moved in by osmosis because the cell had a lower water potential than the distilled water", "Flaccid \u2014 water moved out of the cell", "Plasmolysed \u2014 water moved out by diffusion", "Saturated \u2014 the cell can't hold more solute"], "correct": 0, "fb": "Distilled water has the highest water potential, so water moves in by osmosis, raising turgor pressure until the cell is turgid."}, {"type": "quiz", "scenario": "A wilted (flaccid) celery stick is placed in pure water for an hour.", "question": "What do you predict happens, and why?", "opts": ["It becomes firm (turgid) again \u2014 water moves into its cells by osmosis from the high water-potential water", "It shrinks further \u2014 water leaves the cells", "Nothing changes \u2014 celery cells can't take in water", "It dissolves \u2014 water is a solvent"], "correct": 0, "fb": "Pure water has very high water potential, so water moves into the cells by osmosis, raising turgor pressure and making the celery firm again."}, {"type": "exam", "items": [{"tag": "2 marks", "q": "A plant cell in glucose solution (small vacuole) is moved to distilled water (larger, rounder cell). State two ways the cell has changed.", "a": "Any two: the cell becomes larger / swollen (1); the vacuole becomes larger (1); the cell looks rounder / cytoplasm pushed against the wall / turgid (1)."}, {"tag": "3 marks", "q": "Explain why the plant cell changed when placed in distilled water.", "a": "Distilled water has a higher water potential than the cell (1); water moves into the cell by osmosis through the partially permeable membrane (1); the cell becomes turgid as turgor pressure increases (1)."}, {"tag": "3 marks", "q": "Onion cells are placed in concentrated sugar solution for 20 minutes. Describe and explain what you'd see under a microscope.", "a": "The cell membrane pulls away from the cell wall (plasmolysis) (1) because water moved out by osmosis (1), as the cell had a higher water potential than the solution (1)."}]}]}]};
+const root = document.getElementById('app');
+
+// ---- header + tabs ----
+let tabsHtml = '';
+let panelsHtml = '';
+DATA.panels.forEach((p,i)=>{
+  tabsHtml += `<div class="s2-tab ${i===0?'active':''}" data-panel="${p.id}"><span class="dot"></span>${p.label}</div>`;
+  let sec = '';
+  p.sections.forEach((s,si)=>{
+    const uid = p.id+'_'+si;
+    if(s.type==='vocab'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Key terms — flip the card'}</p><div class="cards-grid" data-vocab="${uid}"></div>${s.mark?`<button class="mark-btn" data-mark="${uid}">Mark as reviewed ✓</button>`:''}</div>`;
+    } else if(s.type==='accordion'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Understand it deeply'}</p><div data-acc="${uid}"></div></div>`;
+    } else if(s.type==='factors'){
+      sec += `<div class="section-card"><p class="section-title">${s.title}</p>${s.note?`<p style="font-size:13px;color:#556352;margin-top:-6px;margin-bottom:14px;">${s.note}</p>`:''}<div class="factor-grid" data-factors="${uid}"></div>${s.mark?`<button class="mark-btn" data-mark="${uid}" style="margin-top:14px;">Mark as reviewed ✓</button>`:''}</div>`;
+    } else if(s.type==='quiz'){
+      sec += `<div class="section-card">${s.scenario?`<div class="scenario">${s.scenario}</div>`:''}<p class="quiz-q">${s.question}</p><div class="quiz-opts" data-quiz="${uid}"></div><div class="quiz-fb" data-fb="${uid}"></div></div>`;
+    } else if(s.type==='exam'){
+      sec += `<div class="section-card"><p class="section-title">${s.title||'Exam-style practice'}</p><div data-exam="${uid}"></div></div>`;
+    }
+  });
+  panelsHtml += `<div class="panel ${i===0?'active':''}" id="panel-${p.id}">${sec}</div>`;
+});
+
+root.querySelector('#tabs').innerHTML = tabsHtml;
+root.querySelector('#panels').innerHTML = panelsHtml;
+
+// ---- tab switching ----
+const tabs = root.querySelectorAll('.s2-tab');
+const panels = root.querySelectorAll('.panel');
+tabs.forEach(tab=>tab.addEventListener('click',()=>{
+  tabs.forEach(t=>t.classList.remove('active'));
+  panels.forEach(p=>p.classList.remove('active'));
+  tab.classList.add('active');
+  root.querySelector('#panel-'+tab.dataset.panel).classList.add('active');
+}));
+
+// ---- progress meter ----
+const markBtns = root.querySelectorAll('.mark-btn');
+const total = markBtns.length || 1;
+const progress = {};
+const vacuole = root.querySelector('#cellVacuole');
+const wall = root.querySelector('#cellWall');
+const status = root.querySelector('#cellStatus');
+const words = ['just starting','warming up','filling up','almost there','fully reviewed'];
+function updateCell(){
+  const done = Object.values(progress).filter(Boolean).length;
+  const frac = done/total;
+  const pct = Math.round(frac*100);
+  vacuole.setAttribute('r', 14 + frac*28);
+  wall.setAttribute('stroke-dasharray', pct===100 ? '0' : '6 4');
+  wall.style.stroke = pct===100 ? 'var(--teal)' : '#a9c19c';
+  const wi = Math.min(words.length-1, Math.round(frac*(words.length-1)));
+  status.textContent = words[wi] + ' · ' + pct + '%';
+  // mark tabs whose every mark-btn is done
+  tabs.forEach(t=>{
+    const btns = root.querySelectorAll('#panel-'+t.dataset.panel+' .mark-btn');
+    if(btns.length && [...btns].every(b=>progress[b.dataset.mark])) t.classList.add('done');
+  });
+}
+markBtns.forEach(b=>b.addEventListener('click',()=>{
+  progress[b.dataset.mark]=true; b.classList.add('done'); b.textContent='Reviewed ✓'; updateCell();
+}));
+
+// ---- render each section's contents ----
+DATA.panels.forEach(p=>p.sections.forEach((s,si)=>{
+  const uid = p.id+'_'+si;
+  if(s.type==='vocab'){
+    const grid = root.querySelector(`[data-vocab="${uid}"]`);
+    s.cards.forEach(([term,def])=>{
+      const c=document.createElement('div'); c.className='flip';
+      c.innerHTML=`<div class="flip-inner"><div class="flip-face flip-front">${term}</div><div class="flip-face flip-back">${def}</div></div>`;
+      c.addEventListener('click',()=>c.classList.toggle('flipped')); grid.appendChild(c);
+    });
+  } else if(s.type==='accordion'){
+    const cont = root.querySelector(`[data-acc="${uid}"]`);
+    s.items.forEach(it=>{
+      const a=document.createElement('div'); a.className='acc';
+      a.innerHTML=`<div class="acc-head"><span>${it.q}</span><span class="arrow">▾</span></div><div class="acc-body"><div class="acc-body-inner">${it.body}</div></div>`;
+      a.querySelector('.acc-head').addEventListener('click',()=>a.classList.toggle('open')); cont.appendChild(a);
+    });
+  } else if(s.type==='factors'){
+    const grid = root.querySelector(`[data-factors="${uid}"]`);
+    s.items.forEach(f=>{
+      const la=f.labels?f.labels[0]:'Rate increases', lb=f.labels?f.labels[1]:'Rate decreases';
+      const va=f.values?f.values[0]:'increase', vb=f.values?f.values[1]:'decrease';
+      const c=document.createElement('div'); c.className='factor-card';
+      c.innerHTML=`<div class="factor-name">${f.name}</div><div class="factor-btns"><button class="factor-btn" data-v="${va}">${la}</button><button class="factor-btn" data-v="${vb}">${lb}</button></div>`;
+      c.querySelectorAll('.factor-btn').forEach(btn=>btn.addEventListener('click',()=>{
+        c.querySelectorAll('.factor-btn').forEach(b=>b.classList.remove('correct','wrong'));
+        if(btn.dataset.v===f.correct){btn.classList.add('correct');}
+        else{btn.classList.add('wrong');[...c.querySelectorAll('.factor-btn')].find(b=>b.dataset.v===f.correct).classList.add('correct');}
+      }));
+      grid.appendChild(c);
+    });
+  } else if(s.type==='quiz'){
+    const cont = root.querySelector(`[data-quiz="${uid}"]`);
+    const fb = root.querySelector(`[data-fb="${uid}"]`);
+    s.opts.forEach((opt,i)=>{
+      const b=document.createElement('div'); b.className='quiz-opt'; b.textContent=opt;
+      b.addEventListener('click',()=>{
+        [...cont.children].forEach(c=>c.classList.remove('correct','wrong'));
+        if(i===s.correct){b.classList.add('correct'); fb.style.color='var(--ok)';}
+        else{b.classList.add('wrong'); cont.children[s.correct].classList.add('correct'); fb.style.color='var(--bad)';}
+        fb.innerHTML=s.fb;
+      });
+      cont.appendChild(b);
+    });
+  } else if(s.type==='exam'){
+    const cont = root.querySelector(`[data-exam="${uid}"]`);
+    s.items.forEach(it=>{
+      const box=document.createElement('div'); box.className='exam-q';
+      box.innerHTML=`<div class="exam-tag">${it.tag}</div><div class="exam-body">${it.q}</div><button class="exam-reveal">Show mark scheme</button><div class="exam-answer">${it.a}</div>`;
+      const btn=box.querySelector('.exam-reveal'), ans=box.querySelector('.exam-answer');
+      btn.addEventListener('click',()=>{ans.classList.toggle('shown'); btn.textContent=ans.classList.contains('shown')?'Hide mark scheme':'Show mark scheme';});
+      cont.appendChild(box);
+    });
+  }
+}));
+
+updateCell();
+</script>
+
+</body>
+</html>
